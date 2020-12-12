@@ -1,0 +1,89 @@
+<html>
+
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>
+        <%= booking.name %>
+    </title>
+    <style>
+        /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+        
+        #map {
+            height: 100%;
+        }
+        /* Optional: Makes the sample page fill the window. */
+        
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css">
+    </stype>
+</head>
+
+<body>
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+
+    <div class="w3-container w3-teal">
+        <H2>Restaurant Details for
+            <%= booking.name %>
+        </H2>
+    </div>
+    <div class="w3-container">
+        <label class="w3-label w3-validate">restaurant_id: <%= booking.restaurant_id %></label></p>
+        <label class="w3-label w3-validate">name: <%= booking.name %></label></p>
+        <label class="w3-label w3-validate">borough: <%= booking.borough %></label></p>
+        <label class="w3-label w3-validate">cuisine: <%= booking.cuisine %></label></p>
+        <label class="w3-label w3-validate">street: <%= booking.address.street %></label></p>
+        <label class="w3-label w3-validate">building: <%= booking.address.building %></label></p>
+        <label class="w3-label w3-validate">zipcode: <%= booking.address.zipcode %></label></p>
+        <label class="w3-label w3-validate">coord: [<%= booking.address.coord.lat %>,<%= booking.address.coord.lon %>]</label></p>
+        <label class="w3-label w3-validate">owner: <%= booking.owner %></p>   
+        <div id="map"></div>
+        <script>
+            function initMap() {
+                var myLatLng = {
+                    lat: <%= booking.address.coord.lat %>,
+                    lng: <%= booking.address.coord.lon %>
+                };
+
+                var map = new google.maps.Map(document.getElementById('map'), {
+                    zoom: 14,
+                    center: myLatLng
+                });
+
+                var marker = new google.maps.Marker({
+                    position: myLatLng,
+                    map: map,
+                    title: <%= booking.name %>
+                });
+            }
+        </script>
+        <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiS6NF9rgD97goxWNEVg5yWdfw_vS3Vy4&callback=initMap">
+        </script>
+        
+            <% if (booking.photo) { %>
+                <img src="data:image/jpg;base64, <%= booking.photo %>"><br>
+            <% } %>
+        </div>
+
+        <div class="w3-container">
+            <%=  if (booking.owner == username){ %>
+        <a href="/edit?_id=<%= booking._id %>"><button class="w3-btn w3-section w3-teal w3-ripple">edit</button></a>
+        <a href="/delete?_id=<%= booking._id %>"><button class="w3-btn w3-section w3-teal w3-ripple">delete</button></a>
+            <%=  } %>      
+        <a href="/score?_id=<%= booking._id %>"><button class="w3-btn w3-section w3-teal w3-ripple">score</button></a>
+        <a href="/find"><button class="w3-btn w3-section w3-teal w3-ripple">back</button></a>
+        <a href="/"><button class="w3-btn w3-section w3-teal w3-ripple">home</button></a>
+        </div>
+    </body>
+</html>
