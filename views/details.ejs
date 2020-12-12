@@ -77,10 +77,10 @@
         </div>
 
         <div class="w3-container">
-            <%=  if (booking.owner == username){ %>
+            <%  if (booking.owner == username){ %>
         <a href="/edit?_id=<%= booking._id %>"><button class="w3-btn w3-section w3-teal w3-ripple">edit</button></a>
         <a href="/delete?_id=<%= booking._id %>"><button class="w3-btn w3-section w3-teal w3-ripple">delete</button></a>
-            <%=  } %>      
+            <%  } %>      
         <a href="/score?_id=<%= booking._id %>"><button class="w3-btn w3-section w3-teal w3-ripple">score</button></a>
         <a href="/find"><button class="w3-btn w3-section w3-teal w3-ripple">back</button></a>
         <a href="/"><button class="w3-btn w3-section w3-teal w3-ripple">home</button></a>
