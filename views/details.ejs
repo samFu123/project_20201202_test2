@@ -9,12 +9,12 @@
     <style>
         /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
-        
+
         #map {
             height: 100%;
         }
         /* Optional: Makes the sample page fill the window. */
-        
+
         html,
         body {
             height: 100%;
@@ -47,7 +47,8 @@
         <label class="w3-label w3-validate">building: <%= booking.address.building %></label></p>
         <label class="w3-label w3-validate">zipcode: <%= booking.address.zipcode %></label></p>
         <label class="w3-label w3-validate">coord: [<%= booking.address.coord.lat %>,<%= booking.address.coord.lon %>]</label></p>
-        <label class="w3-label w3-validate">owner: <%= booking.owner %></p>   
+        <label class="w3-label w3-validate">totalScore:  <%= totalScore %></label></p>
+        <label class="w3-label w3-validate">owner: <%= booking.owner %></p>
         <div id="map"></div>
         <script>
             function initMap() {
@@ -70,20 +71,29 @@
         </script>
         <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiS6NF9rgD97goxWNEVg5yWdfw_vS3Vy4&callback=initMap">
         </script>
-        
+
             <% if (booking.photo) { %>
                 <img src="data:image/jpg;base64, <%= booking.photo %>"><br>
             <% } %>
         </div>
 
         <div class="w3-container">
-            <%  if (booking.owner == username){ %>
+        <% if (booking.owner == username ) { %>
         <a href="/edit?_id=<%= booking._id %>"><button class="w3-btn w3-section w3-teal w3-ripple">edit</button></a>
         <a href="/delete?_id=<%= booking._id %>"><button class="w3-btn w3-section w3-teal w3-ripple">delete</button></a>
-            <%  } %>      
+        <% } %>
+            <%  var isScored = false
+
+            scored.forEach(function (value,i) {
+                if(value.user == username){
+                    isScored=true
+                }
+            })%>
+            <%if(!isScored){%>
         <a href="/score?_id=<%= booking._id %>"><button class="w3-btn w3-section w3-teal w3-ripple">score</button></a>
+            <%}%>
         <a href="/find"><button class="w3-btn w3-section w3-teal w3-ripple">back</button></a>
-        <a href="/"><button class="w3-btn w3-section w3-teal w3-ripple">home</button></a>
+        <a href="/logout"><button class="w3-btn w3-section w3-teal w3-ripple">home</button></a>
         </div>
     </body>
 </html>

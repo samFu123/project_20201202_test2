@@ -18,7 +18,11 @@
                 });
             });
         });
+        function search() {
+            window.location.pathname = '/restaurant/'+document.getElementById("searchBy").value+'/'+document.getElementById("searchV").value
+        }
     </script>
+
     <style>
         table {
             font-family: arial, sans-serif;
@@ -46,7 +50,20 @@
     <H2>Number of Restaurant (
         <%= nData %>)</H2>
     <p>Type something in the input field to search the table for restaurant:</p>
-    <input id="myInput" type="text" placeholder="Search..">
+<!--    <input id="myInput" type="text" placeholder="Search..">-->
+    <div class="search-container">
+
+            Search By
+            <select id="searchBy">
+                <option value="name">name</option>
+                <option value="cuisine">cuisine</option>
+                <option value="borough">borough</option>
+            </select>
+            <input type="text" placeholder="Search.." id="searchV" value="">
+            <button type="button" onclick = "search()">Submit</button>
+
+    </div>
+
     <a href="/insert"><button type="button">Insert</button></a>
     <br><br>
 

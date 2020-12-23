@@ -12,13 +12,14 @@ const dbName = 'lab';
 const colName = 'restaurants';
 
 
+
 app.set('view engine', 'ejs');
 
 
 const SECRETKEY1 = 'I want to pass COMPS381F';
 const SECRETKEY2 = 'Keep this to yourself';
 
-const users = new Array({ name: 'developer', password: 'developer' }, { name: 'guest', password: 'guest' });
+const users = new Array({name: 'developer', password: 'developer'}, {name: 'guest', password: 'guest'});
 
 app.set('view engine', 'ejs');
 
@@ -31,11 +32,14 @@ app.use(session({
 // support parsing of application/json type post data
 app.use(bodyParser.json());
 // support parsing of application/x-www-form-urlencoded post data
-app.use(bodyParser.urlencoded({ extended: true }));
+
+
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
 const findDocument = (db, criteria, callback) => {
     let cursor = db.collection(colName).find(criteria);
+    console.log(cursor)
     console.log(`findDocument: ${JSON.stringify(criteria)}`);
     cursor.toArray((err, docs) => {
         assert.equal(err, null);
@@ -45,22 +49,23 @@ const findDocument = (db, criteria, callback) => {
 }
 
 const handle_Find = (res, criteria, username) => {
+    console.log(username)
     const client = new MongoClient(mongourl);
     client.connect((err) => {
         assert.equal(null, err);
         console.log("Connected successfully to server");
         const db = client.db(dbName);
-
+        console.log(username+' name')
         findDocument(db, criteria, (docs) => {
             client.close();
             console.log("Closed DB connection");
-            res.status(200).render('list', { nData: docs.length, bookings: docs, name: username });
+            res.status(200).render('list', {nData: docs.length, bookings: docs, name: username});
 
         });
     });
 }
 
-const handle_Details = (res, criteria) => {
+const handle_Details = (res, criteria, username) => {
     const client = new MongoClient(mongourl);
     client.connect((err) => {
         assert.equal(null, err);
@@ -69,11 +74,18 @@ const handle_Details = (res, criteria) => {
 
         /* use Document ID for query */
         let DOCID = {};
-        DOCID['_id'] = ObjectID(criteria._id)
+        DOCID['_id'] = ObjectID(criteria._id);
         findDocument(db, DOCID, (docs) => { // docs contain 1 document (hopefully)
             client.close();
-            console.log("Closed DB connection");
-            res.status(200).render('details', { booking: docs[0], username: req.session.username });
+            console.log(docs[0]);
+            let totalScore = 0
+            if(docs[0].grades) {
+                docs[0].grades.forEach(function (value, i) {
+                    console.log(value)
+                    totalScore += value.score
+                });
+            }
+            res.status(200).render('details', {booking: docs[0], username: username,totalScore:totalScore,scored:docs[0].grades});
 
         });
     });
@@ -93,7 +105,7 @@ const handle_Edit = (res, criteria) => {
         cursor.toArray((err, docs) => {
             client.close();
             assert.equal(err, null);
-            res.status(200).render('edit', { booking: docs[0] });
+            res.status(200).render('edit', {booking: docs[0]});
 
         });
     });
@@ -142,7 +154,7 @@ const handle_Update = (req, res, criteria, username) => {
                     'street': req.fields.street,
                     'zipcode': req.fields.zipcode,
                     'building': req.fields.building,
-                    'coord': { 'lat': req.fields.lat, 'lon': req.fields.lon }
+                    'coord': {'lat': req.fields.lat, 'lon': req.fields.lon}
                 };
 
                 if (req.files.filetoupload.size > 0) {
@@ -150,18 +162,18 @@ const handle_Update = (req, res, criteria, username) => {
                         assert.equal(err, null);
                         updateDoc['photo'] = new Buffer.from(data).toString('base64');
                         updateDocument(DOCID, updateDoc, (results) => {
-                            res.redirect('/find');
+                            res.redirect('/restaurant');
 
                         });
                     });
                 } else {
                     updateDocument(DOCID, updateDoc, (results) => {
-                        res.redirect('/find');
+                        res.redirect('/restaurant');
 
                     });
                 }
             } else {
-                res.redirect('/find');
+                res.redirect('/restaurant');
             }
 
 
@@ -197,7 +209,7 @@ const handle_Insert = (req, res, criteria, username) => {
         'street': req.fields.street,
         'zipcode': req.fields.zipcode,
         'building': req.fields.building,
-        'coord': { 'lat': req.fields.lat, 'lon': req.fields.lon }
+        'coord': {'lat': req.fields.lat, 'lon': req.fields.lon}
     };
 
     if (req.files.filetoupload.size > 0) {
@@ -205,13 +217,13 @@ const handle_Insert = (req, res, criteria, username) => {
             assert.equal(err, null);
             insertDoc['photo'] = new Buffer.from(data).toString('base64');
             insertDocument(insertDoc, (results) => {
-                res.redirect('/find');
+                res.redirect('/restaurant');
 
             });
         });
     } else {
         insertDocument(insertDoc, (results) => {
-            res.redirect('/find');
+            res.redirect('/restaurant');
 
         });
     }
@@ -229,7 +241,7 @@ const deleteDocument = (res, criteria, name) => {
                 client.close();
                 assert.equal(err, null);
                 console.log(`deleteDocument: ${JSON.stringify(results)}`);
-                res.redirect('/find');
+                res.redirect('/restaurant');
             }
         );
 
@@ -262,6 +274,7 @@ const handle_Delete = (res, criteria, username) => {
 }
 
 const handle_Score = (res, criteria) => {
+    console.log(123)
     const client = new MongoClient(mongourl);
     client.connect((err) => {
         assert.equal(null, err);
@@ -272,58 +285,51 @@ const handle_Score = (res, criteria) => {
         let DOCID = {};
         DOCID['_id'] = ObjectID(criteria._id)
         let cursor = db.collection(colName).findOne(DOCID,
-            function(err, doc) {
+            function (err, doc) {
                 assert.equal(err, null);
                 client.close();
-                res.status(200).render('rate', { id: doc['_id'] });
+                res.status(200).render('score', {_id: doc['_id']});
             });
 
     });
 
 }
 
-const pushGrades = (criteria, updateDoc, callback) => {
+const pushGrades = (DOCID, insertDoc, callback) => {
     const client = new MongoClient(mongourl);
     client.connect((err) => {
         assert.equal(null, err);
         console.log("Connected successfully to server");
         const db = client.db(dbName);
+        db.collection(colName).updateOne( DOCID, {$push: {grades: insertDoc}})
 
-        db.collection(colName).updateOne(criteria, {
-                $push: updateDoc
-            },
-            (err, results) => {
-                client.close();
-                assert.equal(err, null);
-                console.log(`pushGrades:  ${JSON.stringify(results)}`);
-            }
-        );
     });
 }
 
-const handle_Rate = (req, res, username) => {
-    var DOCID = {};
-    DOCID['_id'] = ObjectID(req.fields._id);
+const handle_Rate = async (req, res, username) => {
 
-    var insertDoc = {
-        grades: {
-            'user': username,
-            'score': req.fields.score
-        }
-    };
+
+
+    var DOCID = {};
+
+    DOCID['_id'] = ObjectID(req.body.id);
+    console.log(DOCID)
+    var insertDoc =  {'user': username, 'score': parseInt(req.body.score)};
+    console.log(JSON.stringify(insertDoc));
 
     pushGrades(DOCID, insertDoc, (results) => {
-        res.redirect('/find');
+
     });
-}
+    res.redirect('/restaurant');
+};
 
 
 app.get('/', (req, res) => {
     console.log(req.session);
-    if (!req.session.authenticated) {
+    if (!req.session.username) {
         res.redirect('/login');
     } else {
-        res.redirect('/find');
+        res.redirect('/restaurant');
     }
 });
 
@@ -337,7 +343,7 @@ app.post('/login', (req, res) => {
             req.session.authenticated = true;
             req.session.username = user.name;
             console.log(req.session.username);
-            res.redirect('/find');
+            res.redirect('/restaurant');
         }
     });
     res.redirect('/');
@@ -348,45 +354,110 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-app.get('/find', (req, res) => {
-    handle_Find(res, req.query.docs, req.session.username);
+app.get('/restaurant',  (req, res) => {
+    if (!req.session.username) {
+        res.redirect('/login');
+    }else {
+        console.log(req.query.docs+'docs123')
+        handle_Find(res, req.query.docs, req.session.username);
+    }
 })
 
-app.get('/details', (req, res) => {
-    handle_Details(res, req.query);
+app.get('/restaurant/cuisine/:cuisine',  (req, res) => {
+    if (!req.session.username) {
+        res.redirect('/login');
+    }else {
+
+        handle_Find(res, {cuisine: req.params.cuisine}  , req.session.username);
+    }
+})
+
+app.get('/restaurant/name/:name',  (req, res) => {
+    if (!req.session.username) {
+        res.redirect('/login');
+    }else {
+
+        handle_Find(res, {name: req.params.name}  , req.session.username);
+    }
+})
+
+app.get('/restaurant/borough/:borough',  (req, res) => {
+    if (!req.session.username) {
+        res.redirect('/login');
+    }else {
+
+        handle_Find(res, {borough: req.params.borough}  , req.session.username);
+    }
+})
+
+app.get('/details', formidable(), (req, res) => {
+    if (!req.session.username) {
+        res.redirect('/login');
+    }else {
+        handle_Details(res, req.query, req.session.username);
+    }
 })
 
 app.get('/edit', formidable(), (req, res) => {
-    handle_Edit(res, req.query);
+    if (!req.session.username) {
+        res.redirect('/login');
+    }else {
+        handle_Edit(res, req.query);
+    }
 })
 
 app.post('/update', formidable(), (req, res) => {
-    handle_Update(req, res, req.query, req.session.username);
+    if (!req.session.username) {
+        res.redirect('/login');
+    }else {
+        handle_Update(req, res, req.query, req.session.username);
+    }
 })
 
 app.get('/insert', formidable(), (req, res) => {
-    res.status(200).render('insert');
+    if (!req.session.username) {
+        res.redirect('/login');
+    }else {
+        res.status(200).render('insert');
+    }
 })
 
 app.post('/newres', formidable(), (req, res) => {
-    handle_Insert(req, res, req.query, req.session.username);
+    if (!req.session.username) {
+        res.redirect('/login');
+    }else {
+        handle_Insert(req, res, req.query, req.session.username);
+    }
 })
 
 app.get('/delete', formidable(), (req, res) => {
-    handle_Delete(res, req.query, req.session.username);
+    if (!req.session.username) {
+        res.redirect('/login');
+    }else {
+        handle_Delete(res, req.query, req.session.username);
+    }
 })
 
 app.get('/score', formidable(), (req, res) => {
-    handle_Score(res, req.query);
+    if (!req.session.username) {
+        res.redirect('/login');
+    }else {
+        handle_Score(res, req.query);
+    }
 })
 
-app.post('/rate', formidable(), (req, res) => {
-    handle_Rate(req, res, req.session.username);
+app.post('/rate', (req, res) => {
+    if (!req.session.username) {
+        res.redirect('/login');
+    }else {
+        handle_Rate(req, res, req.session.username);
+    }
+
 })
 
 app.get('/*', (req, res) => {
     //res.status(404).send(`${req.path} - Unknown request!`);
-    res.status(404).render('info', { message: `${req.path} - Unknown request!` });
+    res.status(404).render('info', {message: `${req.path} - Unknown request!`});
 })
 
 app.listen(process.env.PORT || 8099);
