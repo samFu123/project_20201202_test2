@@ -83,16 +83,17 @@
         <a href="/delete?_id=<%= booking._id %>"><button class="w3-btn w3-section w3-teal w3-ripple">delete</button></a>
         <% } %>
             <%  var isScored = false
-
-            scored.forEach(function (value,i) {
-                if(value.user == username){
-                    isScored=true
-                }
-            })%>
+            if(scored) {
+                scored.forEach(function (value, i) {
+                    if (value.user == username) {
+                        isScored = true
+                    }
+                })
+            }%>
             <%if(!isScored){%>
         <a href="/score?_id=<%= booking._id %>"><button class="w3-btn w3-section w3-teal w3-ripple">score</button></a>
             <%}%>
-        <a href="/find"><button class="w3-btn w3-section w3-teal w3-ripple">back</button></a>
+        <a href="/restaurant"><button class="w3-btn w3-section w3-teal w3-ripple">back</button></a>
         <a href="/logout"><button class="w3-btn w3-section w3-teal w3-ripple">home</button></a>
         </div>
     </body>
