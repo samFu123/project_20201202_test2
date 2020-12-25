@@ -334,7 +334,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-    res.status(200).sendFile(__dirname + '/public/index.html');
+    res.render('index');
 });
 
 app.post('/login', (req, res) => {
